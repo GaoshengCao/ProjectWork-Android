@@ -1,0 +1,13 @@
+Obiettivo App
+-Aiuto tracking ricette fatte
+	Segnare obiettivi di completamento 
+-Ricerca Ricetta
+	-Da ingredienti in possesso per cosa si può fare
+
+
+
+Opzioni extra
+Cambio unità di misura da imperiale a metrico
+
+
+Opzioni Stilistiche 
