@@ -1,5 +1,6 @@
 package com.example.projectwork_android
 
+import Drink
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,7 +8,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -25,12 +31,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.projectwork_android.ui.theme.ProjectWorkAndroidTheme
+//import fetchAllDrinks
 import fetchIngridients
 import kotlinx.coroutines.launch
 
@@ -83,38 +91,118 @@ fun MainPage(navController: NavHostController) {
 }
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun CompletionPage(navController: NavHostController){
+fun CompletionPage(navController: NavHostController,modifier: Modifier = Modifier) {
+    val coroutineScope = rememberCoroutineScope()
+    var DrinkList by remember { mutableStateOf<List<Drink>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
 
-    Button(onClick = {navController.navigate("screen1")}) {
-        Text(text = "Back")
+    coroutineScope.launch {
+//        DrinkList = fetchAllDrinks()
+        isLoading = false
     }
-    //Schermata in cui vengono mostrati quali bevande sono state fatte e quali no
 
-    //TODO
-    //Filtro Per vedere Queli non selezionati
+    //Header
+    Column {
+        Row(
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Button(onClick = { navController.navigate("screen1") }) {
+                    Text(text = "<")
+                }
+            }
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Completion",
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            }
 
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {  }
+        }
+
+
+        var scrollState = rememberScrollState()
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+            )
+        } else {
+            LazyColumn(modifier = modifier) {
+                items(DrinkList) { Drink ->
+                    Text(text = Drink.strDrink)
+                }
+            }
+        }
+    }
 }
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun InverntoryPage(navController: NavHostController,modifier: Modifier = Modifier){
+fun InverntoryPage(navController: NavHostController,modifier: Modifier = Modifier) {
     val coroutineScope = rememberCoroutineScope()
     var ingredientList by remember { mutableStateOf<List<String>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Fetch ingredients asynchronously
     coroutineScope.launch {
-        ingredientList = fetchIngridients()  // Update the list when fetched
-        isLoading = false  // Set loading to false once data is fetched
+        ingredientList = fetchIngridients()
+        isLoading = false
     }
 
-    if (isLoading) {
-        // Show a loading indicator while data is being fetched
-        CircularProgressIndicator(modifier = Modifier.fillMaxSize())
-    } else {
-        // Display ingredients in a list
-        LazyColumn(modifier = modifier) {
-            items(ingredientList) { ingredient ->
-                Text(text = ingredient)
+    //Header
+    Column {
+        Row(
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Button(onClick = { navController.navigate("screen1") }) {
+                    Text(text = "<")
+                }
+            }
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Inventory",
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {  }
+        }
+
+
+        var scrollState = rememberScrollState()
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+            )
+        } else {
+            LazyColumn(modifier = modifier) {
+                items(ingredientList) { ingredient ->
+                    Text(text = ingredient)
+                }
             }
         }
     }
@@ -122,14 +210,41 @@ fun InverntoryPage(navController: NavHostController,modifier: Modifier = Modifie
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun SearchPage(navController: NavHostController){
+fun SearchPage(navController: NavHostController) {
     //Schermata che ti mostra quali bevande puoi fare con gli ingredienti che hai
 
     //TODO
     //Intero Funzionamento
 
-    Button(onClick = {navController.navigate("screen1")}) {
-        Text(text = "Back")
+    //Header
+    Column {
+        Row(
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Button(onClick = { navController.navigate("screen1") }) {
+                    Text(text = "<")
+                }
+            }
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Inventory",
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) { }
+        }
     }
 }
 
@@ -137,69 +252,10 @@ fun SearchPage(navController: NavHostController){
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun RecipePage(navigator: NavHostController){
-
+    //Contenuto Pagina
+    //Immagine Drink
+    //Ingredienti
+    //Ricetta
+    //Tasto per indicare che è stato completato
 }
 
-@SuppressLint("CoroutineCreationDuringComposition")
-@Composable
-fun MainPage(modifier: Modifier = Modifier) {
-    val coroutineScope = rememberCoroutineScope()
-    var ingredientList by remember { mutableStateOf<List<String>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-
-    // Fetch ingredients asynchronously
-    coroutineScope.launch {
-        ingredientList = fetchIngridients()  // Update the list when fetched
-        isLoading = false  // Set loading to false once data is fetched
-    }
-
-    if (isLoading) {
-        // Show a loading indicator while data is being fetched
-        CircularProgressIndicator(modifier = Modifier.fillMaxSize())
-    } else {
-        // Display ingredients in a list
-        LazyColumn(modifier = modifier) {
-            items(ingredientList) { ingredient ->
-                Text(text = ingredient)
-            }
-        }
-    }
-}
-
-
-//{
-//    //Schermata che ti permette di segnare quali ingredienti hai
-//
-//
-//
-//    //TODO
-//    //CheckBox Per ingrediente
-//    //Tasto per selezionare tutti gli ingredienti
-//    //Tasto per deselezionare tutti gli ingredienti
-//
-//    val coroutineScope = rememberCoroutineScope()
-//    var ingredientList by remember { mutableStateOf<List<String>>(emptyList()) }
-//    var isLoading by remember { mutableStateOf(true) }
-//
-//    // Fetch ingredients asynchronously
-//    coroutineScope.launch {
-//        ingredientList = fetchIngridients()  // Update the list when fetched
-//        isLoading = false  // Set loading to false once data is fetched
-//    }
-//
-////    if (isLoading) {
-////        // Show a loading indicator while data is being fetched
-////        CircularProgressIndicator(modifier)
-////    }
-////    else {
-//    // Display ingredients in a list
-//    var scrollState = rememberScrollState()
-//    LazyColumn(Modifier.verticalScroll(scrollState)) {
-//        items(ingredientList) { ingredient ->
-//            Text(text = ingredient)
-//        }
-//    }
-////    }
-//
-//
-//}
