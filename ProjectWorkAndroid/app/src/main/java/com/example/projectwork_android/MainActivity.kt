@@ -9,7 +9,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,20 +23,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.projectwork_android.ui.theme.ProjectWorkAndroidTheme
+import fetchDrinkNames
 //import fetchAllDrinks
 import fetchIngridients
 import kotlinx.coroutines.launch
@@ -49,13 +54,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             ProjectWorkAndroidTheme {
                 val navController = rememberNavController()
+                val drinksViewModel: DrinksViewModel = viewModel()
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     NavHost(navController = navController, startDestination = "screen1") {
                         composable("screen1") { MainPage(navController) }
-                        composable("screen2") { CompletionPage(navController) }
+                        composable("screen2") { CompletionPage(navController, drinksViewModel) }
                         composable("screen3") { InverntoryPage(navController) }
                         composable("screen4") { SearchPage(navController) }
                     }
@@ -64,6 +70,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -75,7 +83,7 @@ fun MainPage(navController: NavHostController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Text(text = "Recipe Tracker", fontSize = 20.sp)
+        Text(text = "Recipe Tracker", fontSize = 40.sp)
         Button(onClick = {navController.navigate("screen2")}) {
             Text(text = "Lista Completamento")
         }
@@ -89,48 +97,39 @@ fun MainPage(navController: NavHostController) {
     }
 
 }
+
+
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun CompletionPage(navController: NavHostController,modifier: Modifier = Modifier) {
-    val coroutineScope = rememberCoroutineScope()
-    var DrinkList by remember { mutableStateOf<List<Drink>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
+fun CompletionPage(
+    navController: NavHostController,
+    viewModel: DrinksViewModel,  // Receive ViewModel as a parameter
+    modifier: Modifier = Modifier
+) {
+    val drinksList = viewModel.drinksList
+    val isLoading = viewModel.isLoading
 
-    coroutineScope.launch {
-//        DrinkList = fetchAllDrinks()
-        isLoading = false
+    LaunchedEffect(Unit) {
+        viewModel.fetchDrinks()
     }
 
-    //Header
     Column {
         Row(
             modifier = Modifier
-                .padding(top = 20.dp)
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Button(onClick = { navController.navigate("screen1") }) {
                     Text(text = "<")
                 }
             }
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = "Completion",
-                    style = MaterialTheme.typography.headlineSmall,
-                )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = "Completion", style = MaterialTheme.typography.headlineSmall)
             }
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {  }
+            Column(modifier = Modifier.weight(1f)) { }
         }
-
 
         var scrollState = rememberScrollState()
         if (isLoading) {
@@ -141,13 +140,15 @@ fun CompletionPage(navController: NavHostController,modifier: Modifier = Modifie
             )
         } else {
             LazyColumn(modifier = modifier) {
-                items(DrinkList) { Drink ->
-                    Text(text = Drink.strDrink)
+                items(drinksList) { drink ->
+                    Text(text = drink)
                 }
             }
         }
     }
 }
+
+
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun InverntoryPage(navController: NavHostController,modifier: Modifier = Modifier) {
@@ -164,7 +165,6 @@ fun InverntoryPage(navController: NavHostController,modifier: Modifier = Modifie
     Column {
         Row(
             modifier = Modifier
-                .padding(top = 20.dp)
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -220,7 +220,6 @@ fun SearchPage(navController: NavHostController) {
     Column {
         Row(
             modifier = Modifier
-                .padding(top = 20.dp)
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -236,7 +235,7 @@ fun SearchPage(navController: NavHostController) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Inventory",
+                    text = "Search Recipe",
                     style = MaterialTheme.typography.headlineSmall,
                 )
             }
@@ -259,3 +258,19 @@ fun RecipePage(navigator: NavHostController){
     //Tasto per indicare che è stato completato
 }
 
+
+class DrinksViewModel : ViewModel() {
+    var drinksList by mutableStateOf<List<String>>(emptyList())
+        private set
+
+    var isLoading by mutableStateOf(true)
+        private set
+
+    fun fetchDrinks() {
+        if (drinksList.isNotEmpty()) return
+        viewModelScope.launch {
+            drinksList = fetchDrinkNames()
+            isLoading = false
+        }
+    }
+}
